@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI over voice | Operations preview</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;background:#0a1221;color:#eaf0ff;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0}.shell{max-width:1160px;margin:auto;padding:30px 24px}
+nav{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #24324b;padding-bottom:24px}
+.brand{font-weight:800;font-size:20px;letter-spacing:.3px}.dot{color:#59ddc8}.eyebrow{color:#86a6ba;font-size:12px;text-transform:uppercase;letter-spacing:2px}
+h1{font-size:clamp(30px,5vw,52px);letter-spacing:-1px;margin:20px 0 8px}.muted{color:#a3b4c7;line-height:1.7}
+.pill{border:1px solid #2f5767;border-radius:50px;padding:8px 14px;color:#83e3d3;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:30px 0}
+.panel{background:#111e32;border:1px solid #253650;border-radius:16px;padding:22px;min-width:0}
+.metric{font-size:34px;font-weight:750;padding-top:8px}.label{color:#9aaec1;font-size:13px}
+h2{font-size:19px;margin:4px 0 20px}.row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #273853;padding:16px 0;gap:16px}
+.tag{font-size:12px;border-radius:30px;padding:6px 10px;background:#374255;color:#d4dfec}
+.good{color:#6ee7c4}.bad{color:#f3a8a8}.cols{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+small{color:#7f96b1}footer{border-top:1px solid #24324b;margin-top:28px;padding-top:24px;color:#8ba0b8;font-size:13px}
+@media(max-width:750px){.grid,.cols{grid-template-columns:1fr}.shell{padding:22px 15px}.row{align-items:start}}
+</style></head>
+<body><div class="shell">
+<nav><div class="brand"><span class="dot">◉</span> AI over voice</div><span class="pill">Safe-mode preview</span></nav>
+<header><p class="eyebrow">Voice operations / control plane</p><h1>Every conversation.<br>Under your control.</h1><p class="muted">An original consent-first voice automation concept. This prototype never initiates calls.</p></header>
+<section class="grid"><div class="panel"><div class="label">Sample contacts</div><div class="metric" id="total">—</div></div><div class="panel"><div class="label">Allowed to schedule now</div><div class="metric good" id="allowed">—</div></div><div class="panel"><div class="label">Blocked by policy</div><div class="metric" id="blocked">—</div></div></section>
+<section class="cols"><article class="panel"><h2>Policy preflight</h2><p class="muted">Consent, quiet hours, suppression and approval are checked at execution time.</p><div id="contacts" aria-live="polite">Loading…</div></article>
+<aside class="panel"><h2>System boundaries</h2><p class="muted">Read-only local sample data</p><div class="row"><span>Live calls</span><strong class="bad">Disabled</strong></div><div class="row"><span>Campaign approval</span><strong id="approval">Not approved</strong></div><div class="row"><span>Data source</span><strong>In memory</strong></div><p class="muted">Future releases: real-time media adapters, configurable playbooks, supervised handoff and enterprise audit controls.</p></aside></section>
+<footer>AI over voice — independently designed, no association with third-party reference products. No copied branding or vendor assets.</footer></div>
+<script>
+fetch('/api/state').then(r=>{if(!r.ok)throw Error('API error');return r.json()}).then(s=>{
+document.getElementById('total').textContent=s.contacts.length;
+document.getElementById('allowed').textContent=s.contacts.filter(c=>c.decision.allowed).length;
+document.getElementById('blocked').textContent=s.contacts.filter(c=>!c.decision.allowed).length;
+document.getElementById('approval').textContent=s.approved?'Approved':'Not approved';
+const root=document.getElementById('contacts');root.replaceChildren();
+for(const c of s.contacts){const row=document.createElement('div');row.className='row';
+const name=document.createElement('div');name.textContent=c.name+' · '+c.phone;const state=document.createElement('span');state.className='tag';state.textContent=c.decision.allowed?'Eligible':c.decision.reasons.join(', ').replaceAll('_',' ');
+row.append(name,state);root.append(row);}
+}).catch(()=>document.getElementById('contacts').textContent='Preview API unavailable. Start the Python server.');
+</script></body></html>
